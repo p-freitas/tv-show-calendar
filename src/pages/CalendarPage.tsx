@@ -71,52 +71,58 @@ export function CalendarPage({ year, month }: { year: number; month: number }) {
         </nav>
       </header>
 
-      <FiltersPanel options={options} visibleCount={filteredEpisodes.length} totalCount={allEpisodes.length} />
-      <Legend />
+      <div className="calendar-layout">
+        <aside className="filters-sidebar" aria-label="Filtros do calendário">
+          <FiltersPanel options={options} visibleCount={filteredEpisodes.length} totalCount={allEpisodes.length} />
+          <Legend />
+        </aside>
 
-      {query.isError ? (
-        <section className="empty-state">
-          <h2>Não foi possível carregar este mês</h2>
-          <p>{query.error instanceof Error ? query.error.message : "Falha ao consultar o PogDesign."}</p>
-          <button className="primary-button" type="button" onClick={() => void query.refetch()}>
-            Tentar novamente
-          </button>
-        </section>
-      ) : null}
+        <div className="calendar-content">
+          {query.isError ? (
+            <section className="empty-state">
+              <h2>Não foi possível carregar este mês</h2>
+              <p>{query.error instanceof Error ? query.error.message : "Falha ao consultar o PogDesign."}</p>
+              <button className="primary-button" type="button" onClick={() => void query.refetch()}>
+                Tentar novamente
+              </button>
+            </section>
+          ) : null}
 
-      {query.isLoading ? <CalendarSkeleton /> : null}
+          {query.isLoading ? <CalendarSkeleton /> : null}
 
-      {!query.isLoading && !query.isError ? (
-        <section className="calendar-grid" aria-label={`Calendário de ${monthTitle(safeYear, safeMonth)}`}>
-          {weekdayHeaders.map((label) => (
-            <div className="weekday-column-header" key={label}>
-              {label}
-            </div>
-          ))}
-          {leadingEmptyDays.map((index) => (
-            <div className="day-block day-placeholder" aria-hidden="true" key={`placeholder-${index}`} />
-          ))}
-          {dayList.map((day) => {
-            const dateKey = isoDate(safeYear, safeMonth, day);
-            const episodes = episodesByDay.get(dateKey) ?? [];
-            return (
-              <article className="day-block" key={dateKey}>
-                <header className="day-header">
-                  <span>{day}</span>
-                  <strong>{weekdayLabel(safeYear, safeMonth, day)}</strong>
-                </header>
-                <div className="episode-stack">
-                  {episodes.length > 0 ? (
-                    episodes.map((episode) => <EpisodeCard key={episode.episodeId} episode={episode} />)
-                  ) : (
-                    <span className="no-episodes">sem episódios</span>
-                  )}
+          {!query.isLoading && !query.isError ? (
+            <section className="calendar-grid" aria-label={`Calendário de ${monthTitle(safeYear, safeMonth)}`}>
+              {weekdayHeaders.map((label) => (
+                <div className="weekday-column-header" key={label}>
+                  {label}
                 </div>
-              </article>
-            );
-          })}
-        </section>
-      ) : null}
+              ))}
+              {leadingEmptyDays.map((index) => (
+                <div className="day-block day-placeholder" aria-hidden="true" key={`placeholder-${index}`} />
+              ))}
+              {dayList.map((day) => {
+                const dateKey = isoDate(safeYear, safeMonth, day);
+                const episodes = episodesByDay.get(dateKey) ?? [];
+                return (
+                  <article className="day-block" key={dateKey}>
+                    <header className="day-header">
+                      <span>{day}</span>
+                      <strong>{weekdayLabel(safeYear, safeMonth, day)}</strong>
+                    </header>
+                    <div className="episode-stack">
+                      {episodes.length > 0 ? (
+                        episodes.map((episode) => <EpisodeCard key={episode.episodeId} episode={episode} />)
+                      ) : (
+                        <span className="no-episodes">sem episódios</span>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </section>
+          ) : null}
+        </div>
+      </div>
 
       <footer className="footer-note">
         Dados do calendário público do{" "}

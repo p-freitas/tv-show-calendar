@@ -38,6 +38,9 @@ export type Show = {
   premiered?: string | null;
   image?: string | null;
   url?: string | null;
+  imdbId?: string | null;
+  imdbUrl?: string | null;
+  ratingAverage?: number | null;
 };
 
 export type Episode = {
@@ -53,6 +56,7 @@ export type Episode = {
   airstamp?: string | null;
   runtime?: number | null;
   image?: string | null;
+  ratingAverage?: number | null;
   episodeType: EpisodeType;
   isSeriesPremiere: boolean;
   isSeasonPremiere: boolean;

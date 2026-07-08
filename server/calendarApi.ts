@@ -109,6 +109,8 @@ function classifyEpisode(episode: TVMazeEpisode, allEpisodes: TVMazeEpisode[]) {
 }
 
 function normalizeShow(show: TVMazeShow) {
+  const imdbId = show.externals?.imdb ?? null;
+
   return {
     showId: show.id,
     name: show.name,
@@ -125,6 +127,9 @@ function normalizeShow(show: TVMazeShow) {
     premiered: show.premiered,
     image: show.image?.original ?? show.image?.medium ?? null,
     url: show.url,
+    imdbId,
+    imdbUrl: imdbId ? `https://www.imdb.com/title/${imdbId}/` : null,
+    ratingAverage: show.rating?.average ?? null,
   };
 }
 
@@ -142,6 +147,7 @@ function normalizeEpisode(episode: TVMazeEpisode, allEpisodes: TVMazeEpisode[], 
     airstamp: episode.airstamp,
     runtime: episode.runtime,
     image: episode.image?.original ?? episode.image?.medium ?? null,
+    ratingAverage: episode.rating?.average ?? null,
     ...classifyEpisode(episode, allEpisodes),
   };
 }

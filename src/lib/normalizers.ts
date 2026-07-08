@@ -9,6 +9,8 @@ export function stripHtml(value?: string | null): string {
 }
 
 export function normalizeShow(show: TVMazeShow): Show {
+  const imdbId = show.externals?.imdb ?? null;
+
   return {
     showId: show.id,
     name: show.name,
@@ -25,6 +27,9 @@ export function normalizeShow(show: TVMazeShow): Show {
     premiered: show.premiered,
     image: show.image?.original ?? show.image?.medium ?? null,
     url: show.url,
+    imdbId,
+    imdbUrl: imdbId ? `https://www.imdb.com/title/${imdbId}/` : null,
+    ratingAverage: show.rating?.average ?? null,
   };
 }
 
@@ -43,6 +48,7 @@ export function normalizeEpisode(episode: TVMazeEpisode, allEpisodes: TVMazeEpis
     airstamp: episode.airstamp,
     runtime: episode.runtime,
     image: episode.image?.original ?? episode.image?.medium ?? null,
+    ratingAverage: episode.rating?.average ?? null,
     ...classification,
   };
 }

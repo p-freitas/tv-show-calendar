@@ -84,6 +84,14 @@ export function SeriesPage({ showId }: { showId: number }) {
                   <dd>{show.url ? <a href={show.url} target="_blank" rel="noreferrer">TVmaze</a> : "não informado"}</dd>
                 </div>
                 <div>
+                  <dt>Nota IMDb</dt>
+                  <dd>{show.ratingAverage ? `${show.ratingAverage.toFixed(1)} / 10` : "não informado"}</dd>
+                </div>
+                <div>
+                  <dt>IMDb</dt>
+                  <dd>{show.imdbUrl ? <a href={show.imdbUrl} target="_blank" rel="noreferrer">Abrir no IMDb</a> : "não informado"}</dd>
+                </div>
+                <div>
                   <dt>Trailer</dt>
                   <dd>{trailerUrl ? <a href={trailerUrl} target="_blank" rel="noreferrer">Buscar no YouTube</a> : "não informado"}</dd>
                 </div>

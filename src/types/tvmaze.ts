@@ -35,6 +35,12 @@ export type TVMazeShow = {
   webChannel?: TVMazeNetwork | null;
   image?: TVMazeImage | null;
   summary?: string | null;
+  externals?: {
+    imdb?: string | null;
+  };
+  rating?: {
+    average?: number | null;
+  };
 };
 
 export type TVMazeEpisode = {
@@ -50,6 +56,9 @@ export type TVMazeEpisode = {
   runtime?: number | null;
   image?: TVMazeImage | null;
   summary?: string | null;
+  rating?: {
+    average?: number | null;
+  };
   _embedded?: {
     show?: TVMazeShow;
   };

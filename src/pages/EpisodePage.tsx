@@ -82,6 +82,10 @@ export function EpisodePage({ episodeId, year, month }: { episodeId: number; yea
                   <dd>{episode.runtime ?? displayEpisode.runtime ? `${episode.runtime ?? displayEpisode.runtime} min` : "não informado"}</dd>
                 </div>
                 <div>
+                  <dt>Nota IMDb</dt>
+                  <dd>{episode.ratingAverage ? `${episode.ratingAverage.toFixed(1)} / 10` : "não informado"}</dd>
+                </div>
+                <div>
                   <dt>Network/plataforma</dt>
                   <dd>{show.webChannel?.name ?? show.network?.name ?? calendarEpisode?.webChannelName ?? calendarEpisode?.networkName ?? "não informado"}</dd>
                 </div>

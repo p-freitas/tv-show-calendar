@@ -1,4 +1,4 @@
-import { episodeTypeLabels, runtimeBucketLabels } from "../config/filters";
+import { DEFAULT_FILTERS, episodeTypeLabels, runtimeBucketLabels } from "../config/filters";
 import { useFilterStore } from "../state/filterStore";
 import type { EpisodeType, RuntimeBucket } from "../types/domain";
 
@@ -37,6 +37,19 @@ function CheckboxGroup({
   );
 }
 
+function hasActiveFilters(filters: ReturnType<typeof useFilterStore.getState>["filters"]) {
+  return (
+    filters.query.trim() !== DEFAULT_FILTERS.query ||
+    filters.episodeType !== DEFAULT_FILTERS.episodeType ||
+    filters.runtimeBucket !== DEFAULT_FILTERS.runtimeBucket ||
+    filters.sourceType !== DEFAULT_FILTERS.sourceType ||
+    filters.genres.length > 0 ||
+    filters.platforms.length > 0 ||
+    filters.countries.length > 0 ||
+    filters.languages.length > 0
+  );
+}
+
 export function FiltersPanel({
   options,
   visibleCount,
@@ -47,15 +60,16 @@ export function FiltersPanel({
   totalCount: number;
 }) {
   const { filters, setFilter, toggleArrayFilter, resetFilters } = useFilterStore();
+  const activeFilters = hasActiveFilters(filters);
 
   return (
-    <details className="filters-panel" open>
-      <summary>
-        <span>Filtros</span>
-        <strong>
+    <section className="filters-panel" aria-labelledby="filters-title">
+      <header className="filters-header">
+        <h2 id="filters-title">Filtros</h2>
+        <span>
           {visibleCount} de {totalCount} episódios
-        </strong>
-      </summary>
+        </span>
+      </header>
 
       <div className="filters-grid">
         <label className="filter-group">
@@ -122,9 +136,9 @@ export function FiltersPanel({
         />
       </div>
 
-      <button className="secondary-button" type="button" onClick={resetFilters}>
+      <button className="secondary-button" type="button" onClick={resetFilters} disabled={!activeFilters}>
         Limpar filtros
       </button>
-    </details>
+    </section>
   );
 }
