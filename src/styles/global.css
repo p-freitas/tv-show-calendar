@@ -510,6 +510,55 @@ h1 {
   margin-bottom: 8px;
 }
 
+.season-accordion {
+  border: 1px solid #27303d;
+  border-radius: 8px;
+  background: rgba(16, 22, 32, 0.62);
+  overflow: hidden;
+}
+
+.season-accordion summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  list-style: none;
+  cursor: pointer;
+  background: #151d29;
+  padding: 12px 14px;
+}
+
+.season-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.season-accordion summary::after {
+  content: "Fechar";
+  min-width: 58px;
+  color: #d8bd67;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.season-accordion:not([open]) summary::after {
+  content: "Abrir";
+}
+
+.season-accordion summary h3 {
+  margin: 0;
+}
+
+.season-accordion summary span {
+  color: #aeb8c5;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.season-accordion .episode-table {
+  padding: 10px;
+}
+
 .episode-table {
   display: grid;
   gap: 6px;

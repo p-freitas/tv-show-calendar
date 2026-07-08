@@ -1,8 +1,10 @@
-import { CALENDAR_DATA_VERSION, LOCAL_CACHE_TTL_MS, POGDESIGN_BASE_URL, TVMAZE_BASE_URL } from "../src/config/app";
-import { isoDate } from "../src/lib/dates";
-import { normalizeEpisode, normalizeShow, stripHtml } from "../src/lib/normalizers";
 import type { CalendarEpisode, CalendarMonth, EpisodeType } from "../src/types/domain";
 import type { TVMazeEpisode, TVMazeShow } from "../src/types/tvmaze";
+
+const CALENDAR_DATA_VERSION = "pogdesign-v2";
+const LOCAL_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
+const POGDESIGN_BASE_URL = "https://www.pogdesign.co.uk";
+const TVMAZE_BASE_URL = "https://api.tvmaze.com";
 
 type CacheEntry<T> = {
   expiresAt: number;
@@ -40,8 +42,108 @@ function decodeHtml(value: string): string {
     .replace(/&([a-z]+);/gi, (match, entity: string) => namedEntities[entity.toLowerCase()] ?? match);
 }
 
+function pad2(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+function isoDate(year: number, month: number, day: number): string {
+  return `${year}-${pad2(month)}-${pad2(day)}`;
+}
+
 function stripTags(value: string): string {
   return decodeHtml(value.replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
+}
+
+function stripHtml(value?: string | null): string {
+  if (!value) return "";
+  return value.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
+function episodeCode(season?: number | null, number?: number | null): string {
+  if (!season || !number) return "Especial";
+  return `S${pad2(season)}E${pad2(number)}`;
+}
+
+function knownDateValue(episode: TVMazeEpisode): number {
+  if (episode.airstamp) return new Date(episode.airstamp).getTime();
+  if (episode.airdate) return new Date(`${episode.airdate}T12:00:00.000Z`).getTime();
+  return 0;
+}
+
+function isLastKnownEpisodeOfSeason(episode: TVMazeEpisode, allEpisodes: TVMazeEpisode[]): boolean {
+  if (!episode.season || !episode.number) return false;
+
+  const seasonEpisodes = allEpisodes
+    .filter((item) => item.season === episode.season && item.number)
+    .sort((a, b) => {
+      const numberDelta = Number(a.number) - Number(b.number);
+      if (numberDelta !== 0) return numberDelta;
+      return knownDateValue(a) - knownDateValue(b);
+    });
+
+  if (seasonEpisodes.length === 0) return false;
+  const last = seasonEpisodes[seasonEpisodes.length - 1];
+  return last.id === episode.id || (last.number === episode.number && last.season === episode.season);
+}
+
+function classifyEpisode(episode: TVMazeEpisode, allEpisodes: TVMazeEpisode[]) {
+  const isSeriesPremiere = episode.season === 1 && episode.number === 1;
+  const isSeasonPremiere = Boolean(episode.season && episode.season > 1 && episode.number === 1);
+  const isSeasonFinale = episode.type === "season_finale" || isLastKnownEpisodeOfSeason(episode, allEpisodes);
+
+  let episodeType: EpisodeType = "regular";
+  if (isSeriesPremiere) {
+    episodeType = "series_premiere";
+  } else if (isSeasonPremiere) {
+    episodeType = "season_premiere";
+  } else if (isSeasonFinale) {
+    episodeType = "season_finale";
+  }
+
+  return {
+    episodeType,
+    isSeriesPremiere,
+    isSeasonPremiere,
+    isSeasonFinale,
+  };
+}
+
+function normalizeShow(show: TVMazeShow) {
+  return {
+    showId: show.id,
+    name: show.name,
+    type: show.type,
+    summary: stripHtml(show.summary),
+    genres: show.genres ?? [],
+    status: show.status,
+    country: show.network?.country ?? show.webChannel?.country ?? null,
+    language: show.language,
+    runtime: show.runtime,
+    averageRuntime: show.averageRuntime,
+    network: show.network ?? null,
+    webChannel: show.webChannel ?? null,
+    premiered: show.premiered,
+    image: show.image?.original ?? show.image?.medium ?? null,
+    url: show.url,
+  };
+}
+
+function normalizeEpisode(episode: TVMazeEpisode, allEpisodes: TVMazeEpisode[], showId = 0) {
+  return {
+    episodeId: episode.id,
+    showId: episode._embedded?.show?.id ?? showId,
+    season: episode.season,
+    number: episode.number,
+    episodeCode: episodeCode(episode.season, episode.number),
+    episodeTitle: episode.name || "Sem título",
+    summary: stripHtml(episode.summary),
+    airdate: episode.airdate,
+    airtime: episode.airtime,
+    airstamp: episode.airstamp,
+    runtime: episode.runtime,
+    image: episode.image?.original ?? episode.image?.medium ?? null,
+    ...classifyEpisode(episode, allEpisodes),
+  };
 }
 
 function normalizeLookupValue(value: string): string {

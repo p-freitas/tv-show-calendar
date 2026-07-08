@@ -105,8 +105,11 @@ export function SeriesPage({ showId }: { showId: number }) {
           <section className="season-list">
             <h2>Temporadas</h2>
             {seasons.map((season) => (
-              <article className="season-block" key={season.season}>
-                <h3>Temporada {season.season}</h3>
+              <details className="season-block season-accordion" key={season.season} open>
+                <summary>
+                  <h3>Temporada {season.season}</h3>
+                  <span>{season.episodes.length} episódios</span>
+                </summary>
                 <div className="episode-table">
                   {season.episodes.map((episode) => (
                     <Link
@@ -125,7 +128,7 @@ export function SeriesPage({ showId }: { showId: number }) {
                     </Link>
                   ))}
                 </div>
-              </article>
+              </details>
             ))}
           </section>
         </>

@@ -1,4 +1,4 @@
-import { handleShowApiRequest } from "../server/calendarApi";
+import { handleShowApiRequest } from "../server/calendarApi.js";
 
 type VercelRequest = {
   method?: string;
