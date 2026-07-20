@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Link, useRouter } from "../App";
 import { EpisodeCard } from "../components/EpisodeCard";
 import { FiltersPanel } from "../components/FiltersPanel";
@@ -6,7 +6,15 @@ import { Legend } from "../components/Legend";
 import { CalendarSkeleton } from "../components/Skeleton";
 import { DEFAULT_COUNTRY } from "../config/app";
 import { useCalendarMonth } from "../hooks/useCalendarMonth";
-import { addMonths, daysInMonth, getCurrentBrazilMonth, isoDate, monthTitle, toMonthPath } from "../lib/dates";
+import {
+  addMonths,
+  dateKeyInTimeZone,
+  daysInMonth,
+  getCurrentBrazilMonth,
+  isoDate,
+  monthTitle,
+  toMonthPath,
+} from "../lib/dates";
 import { applyEpisodeFilters, getFilterOptions } from "../lib/filters";
 import { useFilterStore } from "../state/filterStore";
 
@@ -27,11 +35,15 @@ const weekdayHeaders = ["Seg.", "Ter.", "Qua.", "Qui.", "Sex.", "Sáb.", "Dom."]
 export function CalendarPage({ year, month }: { year: number; month: number }) {
   const { navigate } = useRouter();
   const { filters } = useFilterStore();
+  const todayRef = useRef<HTMLElement | null>(null);
+  const lastScrolledMonthRef = useRef<string | null>(null);
   const safeMonth = month >= 1 && month <= 12 ? month : getCurrentBrazilMonth().month;
   const safeYear = year || getCurrentBrazilMonth().year;
   const previous = addMonths(safeYear, safeMonth, -1);
   const next = addMonths(safeYear, safeMonth, 1);
   const current = getCurrentBrazilMonth();
+  const todayDateKey = dateKeyInTimeZone(new Date());
+  const isCurrentMonth = safeYear === current.year && safeMonth === current.month;
   const query = useCalendarMonth(safeYear, safeMonth, DEFAULT_COUNTRY);
 
   const allEpisodes = query.data?.episodes ?? [];
@@ -50,6 +62,28 @@ export function CalendarPage({ year, month }: { year: number; month: number }) {
 
   const dayList = Array.from({ length: daysInMonth(safeYear, safeMonth) }, (_, index) => index + 1);
   const leadingEmptyDays = Array.from({ length: mondayFirstColumnIndex(safeYear, safeMonth, 1) }, (_, index) => index);
+
+  useEffect(() => {
+    if (!isCurrentMonth) {
+      lastScrolledMonthRef.current = null;
+      return;
+    }
+
+    const monthKey = `${safeYear}-${safeMonth}`;
+    if (query.isLoading || query.isError || lastScrolledMonthRef.current === monthKey) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      todayRef.current?.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+      lastScrolledMonthRef.current = monthKey;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isCurrentMonth, query.isError, query.isLoading, safeMonth, safeYear]);
 
   return (
     <main className="page-shell">
@@ -103,11 +137,17 @@ export function CalendarPage({ year, month }: { year: number; month: number }) {
               {dayList.map((day) => {
                 const dateKey = isoDate(safeYear, safeMonth, day);
                 const episodes = episodesByDay.get(dateKey) ?? [];
+                const isToday = dateKey === todayDateKey;
                 return (
-                  <article className="day-block" key={dateKey}>
+                  <article
+                    aria-current={isToday ? "date" : undefined}
+                    className={`day-block${isToday ? " day-block-today" : ""}`}
+                    key={dateKey}
+                    ref={isToday ? todayRef : undefined}
+                  >
                     <header className="day-header">
                       <span>{day}</span>
-                      <strong>{weekdayLabel(safeYear, safeMonth, day)}</strong>
+                      <strong>{isToday ? "Hoje" : weekdayLabel(safeYear, safeMonth, day)}</strong>
                     </header>
                     <div className="episode-stack">
                       {episodes.length > 0 ? (

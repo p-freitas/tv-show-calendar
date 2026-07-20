@@ -312,6 +312,25 @@ a:focus-visible {
   overflow: hidden;
 }
 
+.day-block-today {
+  border-color: var(--accent);
+  background: #1c2630;
+  box-shadow:
+    0 0 0 2px rgba(51, 156, 255, 0.22),
+    0 8px 24px rgba(0, 0, 0, 0.24);
+  scroll-margin: 24px;
+}
+
+.day-block-today .day-header {
+  border-bottom-color: #286da8;
+  background: var(--accent-soft);
+}
+
+.day-block-today .day-header span,
+.day-block-today .day-header strong {
+  color: #ffffff;
+}
+
 .day-placeholder {
   min-height: 84px;
   background: rgba(29, 29, 29, 0.42);
@@ -361,25 +380,41 @@ a:focus-visible {
   border-color: rgba(255, 255, 255, 0.34);
 }
 
-.episode-card-top,
 .episode-meta {
   display: flex;
   justify-content: space-between;
   gap: 8px;
 }
 
-.episode-card-top strong {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.96rem;
+.episode-card-top {
+  display: grid;
+  gap: 4px;
 }
 
-.episode-card-top span,
+.episode-card-top strong {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.96rem;
+  line-height: 1.22;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.episode-code,
 .episode-meta {
   color: #cccccc;
   font-size: 0.78rem;
+}
+
+.episode-code {
+  justify-self: start;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 2px 5px;
+  line-height: 1.1;
 }
 
 .episode-title {

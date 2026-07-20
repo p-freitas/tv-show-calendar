@@ -13,9 +13,9 @@ export function EpisodeCard({ episode }: { episode: CalendarEpisode }) {
         : "";
   const content = (
     <>
-      <div className="episode-card-top">
+      <div className="episode-card-top" title={`${episode.showName} — ${episode.episodeCode}`}>
         <strong>{episode.showName}</strong>
-        <span>{episode.episodeCode}</span>
+        <span className="episode-code">{episode.episodeCode}</span>
       </div>
       {meta ? <div className="episode-title">{meta}</div> : null}
       {episode.isSeasonFinale && episode.episodeType !== "season_finale" ? <FinaleBadge /> : null}
