@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Link, useRouter } from "../App";
+import { useRouter } from "../App";
 import { EpisodeCard } from "../components/EpisodeCard";
 import { FiltersPanel } from "../components/FiltersPanel";
 import { Legend } from "../components/Legend";
@@ -32,15 +32,36 @@ function mondayFirstColumnIndex(year: number, month: number, day: number) {
 
 const weekdayHeaders = ["Seg.", "Ter.", "Qua.", "Qui.", "Sex.", "Sáb.", "Dom."];
 
-export function CalendarPage({ year, month }: { year: number; month: number }) {
+function MonthNavigation({ year, month, bottom = false }: { year: number; month: number; bottom?: boolean }) {
   const { navigate } = useRouter();
+  const previous = addMonths(year, month, -1);
+  const next = addMonths(year, month, 1);
+  const current = getCurrentBrazilMonth();
+
+  return (
+    <nav
+      className={`month-nav${bottom ? " month-nav-bottom" : ""}`}
+      aria-label={bottom ? "Navegação de meses no final da página" : "Navegação de meses"}
+    >
+      <button type="button" onClick={() => navigate(toMonthPath(previous.year, previous.month))} title="Mês anterior" aria-label="Mês anterior">
+        &lt;
+      </button>
+      <button type="button" onClick={() => navigate(toMonthPath(current.year, current.month))}>
+        Hoje
+      </button>
+      <button type="button" onClick={() => navigate(toMonthPath(next.year, next.month))} title="Próximo mês" aria-label="Próximo mês">
+        &gt;
+      </button>
+    </nav>
+  );
+}
+
+export function CalendarPage({ year, month }: { year: number; month: number }) {
   const { filters } = useFilterStore();
   const todayRef = useRef<HTMLElement | null>(null);
   const lastScrolledMonthRef = useRef<string | null>(null);
   const safeMonth = month >= 1 && month <= 12 ? month : getCurrentBrazilMonth().month;
   const safeYear = year || getCurrentBrazilMonth().year;
-  const previous = addMonths(safeYear, safeMonth, -1);
-  const next = addMonths(safeYear, safeMonth, 1);
   const current = getCurrentBrazilMonth();
   const todayDateKey = dateKeyInTimeZone(new Date());
   const isCurrentMonth = safeYear === current.year && safeMonth === current.month;
@@ -92,17 +113,7 @@ export function CalendarPage({ year, month }: { year: number; month: number }) {
           <p className="eyebrow">Calendário de séries</p>
           <h1>{monthTitle(safeYear, safeMonth)}</h1>
         </div>
-        <nav className="month-nav" aria-label="Navegação de meses">
-          <button type="button" onClick={() => navigate(toMonthPath(previous.year, previous.month))} title="Mês anterior">
-            &lt;
-          </button>
-          <button type="button" onClick={() => navigate(toMonthPath(current.year, current.month))}>
-            Hoje
-          </button>
-          <button type="button" onClick={() => navigate(toMonthPath(next.year, next.month))} title="Próximo mês">
-            &gt;
-          </button>
-        </nav>
+        <MonthNavigation year={safeYear} month={safeMonth} />
       </header>
 
       <div className="calendar-layout">
@@ -161,6 +172,7 @@ export function CalendarPage({ year, month }: { year: number; month: number }) {
               })}
             </section>
           ) : null}
+          <MonthNavigation year={safeYear} month={safeMonth} bottom />
         </div>
       </div>
 

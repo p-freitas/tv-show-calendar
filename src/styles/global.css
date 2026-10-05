@@ -493,6 +493,11 @@ a:focus-visible {
   color: #f2d6dc;
 }
 
+.month-nav-bottom {
+  width: fit-content;
+  margin: 18px 0 0 auto;
+}
+
 .footer-note {
   margin-top: 18px;
   color: #969696;
@@ -818,6 +823,10 @@ a:focus-visible {
 
   .month-nav {
     justify-content: space-between;
+  }
+
+  .month-nav-bottom {
+    width: auto;
   }
 
   .month-nav button {
