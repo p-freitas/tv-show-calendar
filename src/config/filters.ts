@@ -6,13 +6,12 @@ export const DEFAULT_FILTERS: Filters = {
   platforms: [],
   countries: [],
   languages: [],
-  runtimeBucket: "all",
-  episodeType: "all",
+  runtimeBuckets: [],
+  episodeTypes: [],
   sourceType: "all",
 };
 
 export const runtimeBucketLabels: Record<RuntimeBucket, string> = {
-  all: "Todas",
   under_20: "Até 20 min",
   "21_30": "21-30 min",
   "31_45": "31-45 min",
@@ -20,8 +19,7 @@ export const runtimeBucketLabels: Record<RuntimeBucket, string> = {
   over_60: "Acima de 60 min",
 };
 
-export const episodeTypeLabels: Record<EpisodeType | "all", string> = {
-  all: "Todos",
+export const episodeTypeLabels: Record<EpisodeType, string> = {
   series_premiere: "Estreia da série",
   season_premiere: "Estreia de temporada",
   season_finale: "Final de temporada",
@@ -34,6 +32,23 @@ export const sourceTypeLabels: Record<SourceType, string> = {
   web: "Streaming/web",
   pogdesign: "PogDesign",
 };
+
+export function migratePersistedFilters(state: unknown): { filters: Filters } {
+  const saved = (state as { filters?: Partial<Filters> & {
+    runtimeBucket?: RuntimeBucket | "all";
+    episodeType?: EpisodeType | "all";
+  } } | null)?.filters ?? {};
+  const { runtimeBucket, episodeType, ...filters } = saved;
+
+  return {
+    filters: {
+      ...DEFAULT_FILTERS,
+      ...filters,
+      runtimeBuckets: filters.runtimeBuckets ?? (runtimeBucket && runtimeBucket !== "all" ? [runtimeBucket] : []),
+      episodeTypes: filters.episodeTypes ?? (episodeType && episodeType !== "all" ? [episodeType] : []),
+    },
+  };
+}
 
 export const filterGroups = [
   "Nome da série",

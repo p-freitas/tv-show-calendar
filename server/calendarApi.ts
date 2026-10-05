@@ -1,7 +1,7 @@
 import type { CalendarEpisode, CalendarMonth, EpisodeType } from "../src/types/domain";
 import type { TVMazeEpisode, TVMazeShow } from "../src/types/tvmaze";
 
-const CALENDAR_DATA_VERSION = "pogdesign-v2";
+const CALENDAR_DATA_VERSION = "pogdesign-v3";
 const LOCAL_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
 const POGDESIGN_BASE_URL = "https://www.pogdesign.co.uk";
 const TVMAZE_BASE_URL = "https://api.tvmaze.com";
@@ -269,7 +269,9 @@ function parsePogDesignEpisode(block: string, day: number, month: number, year: 
 }
 
 export function parsePogDesignCalendarMonth(html: string, year: number, month: number): CalendarEpisode[] {
-  const dayMatches = Array.from(html.matchAll(/<div id="d_(\d{1,2})_(\d{1,2})_(\d{4})"\s+class="day">/gi));
+  // PogDesign replaces the "day" class with "today" on the current date.
+  // Match every date container so its episodes never spill into a neighboring day.
+  const dayMatches = Array.from(html.matchAll(/<div\b[^>]*\bid=["']d_(\d{1,2})_(\d{1,2})_(\d{4})["'][^>]*>/gi));
   const episodes: CalendarEpisode[] = [];
 
   dayMatches.forEach((dayMatch, index) => {

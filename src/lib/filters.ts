@@ -8,7 +8,6 @@ function normalize(value?: string | null): string {
 }
 
 function runtimeMatches(runtime: number | null | undefined, bucket: RuntimeBucket): boolean {
-  if (bucket === "all") return true;
   if (!runtime) return false;
 
   if (bucket === "under_20") return runtime <= 20;
@@ -32,8 +31,8 @@ export function episodeMatchesFilters(episode: CalendarEpisode, filters: Filters
   if (filters.countries.length > 0 && (!country || !filters.countries.includes(country))) return false;
 
   if (filters.languages.length > 0 && (!episode.language || !filters.languages.includes(episode.language))) return false;
-  if (!runtimeMatches(runtime, filters.runtimeBucket)) return false;
-  if (filters.episodeType !== "all" && episode.episodeType !== filters.episodeType) return false;
+  if (filters.runtimeBuckets.length > 0 && !filters.runtimeBuckets.some((bucket) => runtimeMatches(runtime, bucket))) return false;
+  if (filters.episodeTypes.length > 0 && !filters.episodeTypes.includes(episode.episodeType)) return false;
   if (filters.sourceType !== "all" && episode.sourceType !== filters.sourceType) return false;
 
   return true;

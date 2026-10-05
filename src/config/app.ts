@@ -6,7 +6,7 @@ export const TVMAZE_BASE_URL = "https://api.tvmaze.com";
 
 export const QUERY_STALE_TIME_MS = 1000 * 60 * 60 * 6;
 export const LOCAL_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
-export const CALENDAR_DATA_VERSION = "pogdesign-v2";
+export const CALENDAR_DATA_VERSION = "pogdesign-v3";
 
 export const EXCLUDED_SHOW_TYPES = new Set(["News"]);
 

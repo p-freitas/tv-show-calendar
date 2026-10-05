@@ -6,7 +6,7 @@ export type EpisodeType =
 
 export type SourceType = "all" | "tv" | "web" | "pogdesign";
 
-export type RuntimeBucket = "all" | "under_20" | "21_30" | "31_45" | "46_60" | "over_60";
+export type RuntimeBucket = "under_20" | "21_30" | "31_45" | "46_60" | "over_60";
 
 export type Country = {
   name?: string;
@@ -95,8 +95,8 @@ export type Filters = {
   platforms: string[];
   countries: string[];
   languages: string[];
-  runtimeBucket: RuntimeBucket;
-  episodeType: EpisodeType | "all";
+  runtimeBuckets: RuntimeBucket[];
+  episodeTypes: EpisodeType[];
   sourceType: SourceType;
 };
 

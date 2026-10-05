@@ -9,16 +9,22 @@ type FilterOptions = {
   languages: string[];
 };
 
-function CheckboxGroup({
+function CheckboxGroup<T extends string>({
   title,
   values,
   selected,
   onToggle,
+  labels,
+  allLabel,
+  onClear,
 }: {
   title: string;
-  values: string[];
-  selected: string[];
-  onToggle: (value: string) => void;
+  values: T[];
+  selected: T[];
+  onToggle: (value: T) => void;
+  labels?: Record<T, string>;
+  allLabel?: string;
+  onClear?: () => void;
 }) {
   if (values.length === 0) return null;
 
@@ -26,10 +32,16 @@ function CheckboxGroup({
     <fieldset className="filter-group">
       <legend>{title}</legend>
       <div className="check-list">
+        {allLabel && onClear ? (
+          <label className="check-pill">
+            <input type="checkbox" checked={selected.length === 0} onChange={onClear} />
+            {allLabel}
+          </label>
+        ) : null}
         {values.slice(0, 80).map((value) => (
           <label key={value} className="check-pill">
             <input type="checkbox" checked={selected.includes(value)} onChange={() => onToggle(value)} />
-            {value}
+            {labels?.[value] ?? value}
           </label>
         ))}
       </div>
@@ -40,8 +52,8 @@ function CheckboxGroup({
 function hasActiveFilters(filters: ReturnType<typeof useFilterStore.getState>["filters"]) {
   return (
     filters.query.trim() !== DEFAULT_FILTERS.query ||
-    filters.episodeType !== DEFAULT_FILTERS.episodeType ||
-    filters.runtimeBucket !== DEFAULT_FILTERS.runtimeBucket ||
+    filters.episodeTypes.length > 0 ||
+    filters.runtimeBuckets.length > 0 ||
     filters.sourceType !== DEFAULT_FILTERS.sourceType ||
     filters.genres.length > 0 ||
     filters.platforms.length > 0 ||
@@ -82,33 +94,25 @@ export function FiltersPanel({
           />
         </label>
 
-        <label className="filter-group">
-          <span>Tipo de episódio</span>
-          <select
-            value={filters.episodeType}
-            onChange={(event) => setFilter("episodeType", event.target.value as EpisodeType | "all")}
-          >
-            {Object.entries(episodeTypeLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <CheckboxGroup
+          title="Tipo de episódio"
+          values={Object.keys(episodeTypeLabels) as EpisodeType[]}
+          labels={episodeTypeLabels}
+          selected={filters.episodeTypes}
+          onToggle={(value) => toggleArrayFilter("episodeTypes", value)}
+          allLabel="Todos"
+          onClear={() => setFilter("episodeTypes", [])}
+        />
 
-        <label className="filter-group">
-          <span>Duração</span>
-          <select
-            value={filters.runtimeBucket}
-            onChange={(event) => setFilter("runtimeBucket", event.target.value as RuntimeBucket)}
-          >
-            {Object.entries(runtimeBucketLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <CheckboxGroup
+          title="Duração"
+          values={Object.keys(runtimeBucketLabels) as RuntimeBucket[]}
+          labels={runtimeBucketLabels}
+          selected={filters.runtimeBuckets}
+          onToggle={(value) => toggleArrayFilter("runtimeBuckets", value)}
+          allLabel="Todas"
+          onClear={() => setFilter("runtimeBuckets", [])}
+        />
 
         <CheckboxGroup
           title="Categoria/gênero"
