@@ -1,4 +1,4 @@
-export const APP_TIMEZONE = "America/Bahia";
+export const APP_TIMEZONE = "America/Sao_Paulo";
 export const DEFAULT_COUNTRY = "US";
 export const POGDESIGN_BASE_URL = "https://www.pogdesign.co.uk";
 export const TV_SCHEDULE_COUNTRIES = ["US", "GB", "CA", "AU"];

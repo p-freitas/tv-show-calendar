@@ -97,8 +97,8 @@ export async function getShowEpisodes(showId: number): Promise<Episode[]> {
   return rawEpisodes.map((episode) => normalizeEpisode(episode, rawEpisodes, showId));
 }
 
-export async function getEpisode(episodeId: number): Promise<{ episode: Episode; show: Show }> {
-  const response = await fetch(`/api/episode?episodeId=${episodeId}`);
+export async function getEpisode(episodeId: number, fromNotification = false): Promise<{ episode: Episode; show: Show }> {
+  const response = await fetch(`/api/episode?episodeId=${episodeId}${fromNotification ? "&source=notification" : ""}`);
   const contentType = response.headers.get("content-type") ?? "";
 
   if (!contentType.includes("application/json")) {

@@ -295,7 +295,11 @@ export function parsePogDesignCalendarMonth(html: string, year: number, month: n
 }
 
 async function fetchTvmazeJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${TVMAZE_BASE_URL}${path}`);
+  let response = await fetch(`${TVMAZE_BASE_URL}${path}`, { signal: AbortSignal.timeout(8_000) });
+  if (response.status === 429 || response.status >= 500) {
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    response = await fetch(`${TVMAZE_BASE_URL}${path}`, { signal: AbortSignal.timeout(8_000) });
+  }
   if (!response.ok) throw new Error(`TVmaze respondeu ${response.status} para ${path}`);
   return response.json() as Promise<T>;
 }
@@ -346,9 +350,9 @@ async function getTvmazeShowEpisodes(showId: number): Promise<TVMazeEpisode[]> {
   const cached = showEpisodesCache.get(showId);
   if (cached && cached.expiresAt > Date.now()) return cached.value;
 
-  const episodes = await fetchTvmazeJson<TVMazeEpisode[]>(`/shows/${showId}/episodes`);
+  const episodes = await fetchTvmazeJson<TVMazeEpisode[]>(`/shows/${showId}/episodes?specials=1`);
   showEpisodesCache.set(showId, {
-    expiresAt: Date.now() + LOCAL_CACHE_TTL_MS * 7,
+    expiresAt: Date.now() + 5 * 60_000,
     value: episodes,
   });
   return episodes;
@@ -435,8 +439,10 @@ export async function getServerCalendarEpisode(year: number, month: number, epis
 }
 
 export async function getServerShowDetail(showId: number) {
-  const show = await fetchTvmazeJson<TVMazeShow>(`/shows/${showId}`);
-  const episodes = await getTvmazeShowEpisodes(show.id);
+  const [show, episodes] = await Promise.all([
+    fetchTvmazeJson<TVMazeShow>(`/shows/${showId}`),
+    getTvmazeShowEpisodes(showId),
+  ]);
 
   return {
     show: normalizeShow(show),
@@ -534,7 +540,9 @@ export async function handleEpisodeApiRequest(request: CalendarRequest, response
       const data = await getServerTvmazeEpisode(episodeId);
       response.statusCode = 200;
       response.setHeader("content-type", "application/json; charset=utf-8");
-      response.setHeader("cache-control", "s-maxage=21600, stale-while-revalidate=86400");
+      response.setHeader("cache-control", url.searchParams.get("source") === "notification"
+        ? "s-maxage=60, stale-while-revalidate=60"
+        : "s-maxage=21600, stale-while-revalidate=86400");
       response.end(JSON.stringify(data));
       return;
     }

@@ -1,0 +1,2 @@
+export const MAX_FOLLOWED_SHOWS = 30;
+export const NOTIFICATIONS_POLL_INTERVAL_MS = 60_000;

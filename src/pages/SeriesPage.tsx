@@ -5,6 +5,8 @@ import { EpisodeBadge, FinaleBadge } from "../components/Badge";
 import { formatDateInBrazil, formatTimeInBrazil, getCurrentBrazilMonth, hasReleased, toMonthPath } from "../lib/dates";
 import { groupEpisodesBySeason } from "../lib/normalizers";
 import { tvmaze } from "../services/tvmaze";
+import { FollowButton } from "../components/FollowButton";
+import { NotificationStatus } from "../components/NotificationStatus";
 
 export function SeriesPage({ showId }: { showId: number }) {
   const detailQuery = useQuery({
@@ -49,6 +51,8 @@ export function SeriesPage({ showId }: { showId: number }) {
             <div>
               <p className="eyebrow">Série</p>
               <h1>{show.name}</h1>
+              <div className="series-follow-actions"><FollowButton showId={show.showId} /><Link href="/notifications?tab=following" className="text-link">Ver séries que acompanho</Link></div>
+              <NotificationStatus />
               <p className="summary">{show.summary || "Sinopse não informada."}</p>
               <dl className="metadata-grid">
                 <div>
