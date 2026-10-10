@@ -240,7 +240,7 @@ export async function getCalendarMonthDirect(
 async function getCalendarMonthFromBackend(year: number, month: number, country: string): Promise<CalendarMonth | null> {
   if (typeof window === "undefined") return null;
 
-  const response = await fetch(`/api/calendar?year=${year}&month=${month}&country=${country}`);
+  const response = await fetch(`/api/calendar?year=${year}&month=${month}&country=${country}&v=${CALENDAR_DATA_VERSION}`);
   const contentType = response.headers.get("content-type") ?? "";
 
   if (!contentType.includes("application/json")) return null;

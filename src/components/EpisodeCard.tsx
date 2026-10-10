@@ -3,7 +3,8 @@ import { FinaleBadge } from "./Badge";
 import type { CalendarEpisode } from "../types/domain";
 
 export function EpisodeCard({ episode }: { episode: CalendarEpisode }) {
-  const href = `/series/${episode.tvmazeShowId ?? episode.showId}`;
+  const showId = episode.tvmazeShowId ?? (episode.sourceType === "pogdesign" ? undefined : episode.showId);
+  const href = showId ? `/series/${showId}` : undefined;
   const meta = episode.isSeriesPremiere
     ? "estreia da série"
     : episode.isSeasonPremiere

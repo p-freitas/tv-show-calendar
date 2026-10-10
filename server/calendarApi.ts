@@ -1,7 +1,7 @@
 import type { CalendarEpisode, CalendarMonth, EpisodeType } from "../src/types/domain";
 import type { TVMazeEpisode, TVMazeShow } from "../src/types/tvmaze";
 
-const CALENDAR_DATA_VERSION = "pogdesign-v3";
+const CALENDAR_DATA_VERSION = "pogdesign-v4";
 const LOCAL_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
 const POGDESIGN_BASE_URL = "https://www.pogdesign.co.uk";
 const TVMAZE_BASE_URL = "https://api.tvmaze.com";
@@ -160,6 +160,11 @@ function normalizeLookupValue(value: string): string {
     .replace(/[^a-z0-9]+/gi, "")
     .toLowerCase();
 }
+
+const TVMAZE_SHOW_ALIASES: Record<string, string> = {
+  ghostus: "Ghosts",
+  ghostsus: "Ghosts",
+};
 
 function absolutePogDesignUrl(path?: string): string | undefined {
   if (!path) return undefined;
@@ -321,17 +326,18 @@ async function mapLimit<T, R>(items: T[], limit: number, mapper: (item: T) => Pr
 }
 
 async function findTvmazeShow(showName: string): Promise<TVMazeShow | null> {
-  const cacheKey = normalizeLookupValue(showName);
+  const lookupName = TVMAZE_SHOW_ALIASES[normalizeLookupValue(showName)] ?? showName;
+  const cacheKey = normalizeLookupValue(lookupName);
   const cached = showSearchCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) return cached.value;
 
   try {
     const matches = await fetchTvmazeJson<Array<{ score: number; show: TVMazeShow }>>(
-      `/search/shows?q=${encodeURIComponent(showName)}`,
+      `/search/shows?q=${encodeURIComponent(lookupName)}`,
     );
-    const normalizedName = normalizeLookupValue(showName);
+    const normalizedName = normalizeLookupValue(lookupName);
     const exact = matches.find((match) => normalizeLookupValue(match.show.name) === normalizedName);
-    const value = exact?.show ?? matches[0]?.show ?? null;
+    const value = exact?.show ?? null;
     showSearchCache.set(cacheKey, {
       expiresAt: Date.now() + LOCAL_CACHE_TTL_MS * 7,
       value,
