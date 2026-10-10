@@ -402,6 +402,11 @@ a:focus-visible {
   -webkit-line-clamp: 2;
 }
 
+.episode-card-top .episode-show-followed {
+  color: #9dccff;
+  font-weight: 800;
+}
+
 .episode-code,
 .episode-meta {
   color: #cccccc;
