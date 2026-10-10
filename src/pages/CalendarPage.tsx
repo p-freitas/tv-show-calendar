@@ -162,7 +162,13 @@ export function CalendarPage({ year, month }: { year: number; month: number }) {
                     </header>
                     <div className="episode-stack">
                       {episodes.length > 0 ? (
-                        episodes.map((episode) => <EpisodeCard key={episode.episodeId} episode={episode} />)
+                        episodes.map((episode) => (
+                          <EpisodeCard
+                            key={episode.episodeId}
+                            episode={episode}
+                            returnTo={toMonthPath(safeYear, safeMonth)}
+                          />
+                        ))
                       ) : (
                         <span className="no-episodes">sem episódios</span>
                       )}

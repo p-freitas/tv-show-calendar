@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "../App";
+import { Link, useRouter } from "../App";
 import { EpisodeBadge, FinaleBadge } from "../components/Badge";
 import { formatDateInBrazil, formatTimeInBrazil, getCurrentBrazilMonth, hasReleased, toMonthPath } from "../lib/dates";
 import { groupEpisodesBySeason } from "../lib/normalizers";
@@ -9,6 +9,7 @@ import { FollowButton } from "../components/FollowButton";
 import { NotificationStatus } from "../components/NotificationStatus";
 
 export function SeriesPage({ showId }: { showId: number }) {
+  const { search } = useRouter();
   const detailQuery = useQuery({
     queryKey: ["show-detail", showId],
     queryFn: () => tvmaze.getShowDetail(showId),
@@ -31,6 +32,12 @@ export function SeriesPage({ showId }: { showId: number }) {
       .slice(0, 12);
   }, [episodes]);
   const current = getCurrentBrazilMonth();
+  const returnTo = new URLSearchParams(search).get("returnTo");
+  const calendarReturn = returnTo?.match(/^\/calendar\/(\d{4})\/(\d{1,2})\/?$/);
+  const returnMonth = calendarReturn ? Number(calendarReturn[2]) : 0;
+  const calendarHref = calendarReturn && returnMonth >= 1 && returnMonth <= 12
+    ? toMonthPath(Number(calendarReturn[1]), returnMonth)
+    : toMonthPath(current.year, current.month);
   const trailerUrl = show
     ? `https://www.youtube.com/results?search_query=${encodeURIComponent(`${show.name} official trailer`)}`
     : undefined;
@@ -38,7 +45,7 @@ export function SeriesPage({ showId }: { showId: number }) {
   return (
     <main className="page-shell detail-page">
       <nav className="breadcrumb">
-        <Link href={toMonthPath(current.year, current.month)}>Calendário</Link>
+        <Link href={calendarHref}>Calendário</Link>
       </nav>
 
       {detailQuery.isLoading ? <div className="hero-skeleton" /> : null}

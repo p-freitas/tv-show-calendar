@@ -2,9 +2,11 @@ import { Link } from "../App";
 import { FinaleBadge } from "./Badge";
 import type { CalendarEpisode } from "../types/domain";
 
-export function EpisodeCard({ episode }: { episode: CalendarEpisode }) {
+export function EpisodeCard({ episode, returnTo }: { episode: CalendarEpisode; returnTo?: string }) {
   const showId = episode.tvmazeShowId ?? (episode.sourceType === "pogdesign" ? undefined : episode.showId);
-  const href = showId ? `/series/${showId}` : undefined;
+  const href = showId
+    ? `/series/${showId}${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`
+    : undefined;
   const meta = episode.isSeriesPremiere
     ? "estreia da série"
     : episode.isSeasonPremiere
