@@ -380,12 +380,6 @@ a:focus-visible {
   border-color: rgba(255, 255, 255, 0.34);
 }
 
-.episode-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .episode-card-top {
   display: grid;
   gap: 4px;
@@ -407,8 +401,7 @@ a:focus-visible {
   font-weight: 800;
 }
 
-.episode-code,
-.episode-meta {
+.episode-code {
   color: #cccccc;
   font-size: 0.78rem;
 }
@@ -427,13 +420,6 @@ a:focus-visible {
   color: #ffffff;
   font-size: 0.84rem;
   line-height: 1.3;
-}
-
-.episode-meta span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .episode-series_premiere {
@@ -483,8 +469,7 @@ a:focus-visible {
   background: #5c5c5c;
 }
 
-.no-episodes,
-.muted {
+.no-episodes {
   color: #8b8b8b;
   font-size: 0.88rem;
 }

@@ -1,4 +1,4 @@
-import type { EpisodeType, Filters, RuntimeBucket, SourceType } from "../types/domain";
+import type { EpisodeType, Filters, RuntimeBucket } from "../types/domain";
 
 export const DEFAULT_FILTERS: Filters = {
   query: "",
@@ -26,13 +26,6 @@ export const episodeTypeLabels: Record<EpisodeType, string> = {
   regular: "Comuns",
 };
 
-export const sourceTypeLabels: Record<SourceType, string> = {
-  all: "Todas",
-  tv: "TV tradicional",
-  web: "Streaming/web",
-  pogdesign: "PogDesign",
-};
-
 export function migratePersistedFilters(state: unknown): { filters: Filters } {
   const saved = (state as { filters?: Partial<Filters> & {
     runtimeBucket?: RuntimeBucket | "all";
@@ -49,14 +42,3 @@ export function migratePersistedFilters(state: unknown): { filters: Filters } {
     },
   };
 }
-
-export const filterGroups = [
-  "Nome da série",
-  "Categoria/gênero",
-  "Network/plataforma",
-  "País",
-  "Língua original",
-  "Duração",
-  "Tipo de episódio",
-  "Fonte de exibição",
-] as const;

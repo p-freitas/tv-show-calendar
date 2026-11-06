@@ -84,11 +84,6 @@ export type CalendarEpisode = Episode & {
   tvmazeEpisodeId?: number;
 };
 
-export type SeasonGroup = {
-  season: number;
-  episodes: Episode[];
-};
-
 export type Filters = {
   query: string;
   genres: string[];

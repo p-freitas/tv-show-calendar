@@ -63,7 +63,3 @@ export type TVMazeEpisode = {
     show?: TVMazeShow;
   };
 };
-
-export type TVMazeEpisodeWithShow = TVMazeEpisode & {
-  show?: TVMazeShow;
-};

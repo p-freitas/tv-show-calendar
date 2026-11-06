@@ -152,26 +152,52 @@ describe("Vercel-compatible HTTP API", () => {
   });
   afterAll(async () => { await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); });
 
-  it("persists the full follow, poll, read, refresh and unfollow lifecycle in cookies", async () => {
+  it("isolates follows, notifications and read state between browser sessions", async () => {
+    function browser() {
+      let cookie = "";
+      return async (method = "GET", body?: object) => {
+        const response = await fetch(base, {
+          method,
+          headers: {
+            ...(cookie ? { cookie } : {}),
+            ...(body ? { "content-type": "application/json", origin: base } : {}),
+          },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        const updatedCookie = response.headers.get("set-cookie");
+        if (updatedCookie) cookie = updatedCookie.split(";")[0];
+        return response;
+      };
+    }
+
+    const alice = browser();
+    const bob = browser();
     now = START;
-    const followed = await fetch(base, { method: "POST", headers: { "content-type": "application/json", origin: base }, body: JSON.stringify({ action: "follow", showId: 1 }) });
-    expect(followed.status).toBe(200);
-    let cookie = followed.headers.get("set-cookie")!.split(";")[0];
+    expect((await alice("POST", { action: "follow", showId: 1 })).status).toBe(200);
+    expect((await bob("POST", { action: "follow", showId: 2 })).status).toBe(200);
+    expect((await bob("POST", { action: "follow", showId: 1 })).status).toBe(200);
     now = NOW;
-    const response = await fetch(base, { headers: { cookie } });
+
+    const response = await alice();
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(response.headers.get("vercel-cdn-cache-control")).toBe("no-store");
     expect(response.headers.get("vary")).toBe("Cookie");
     const feed = await response.json() as NotificationFeed;
+    expect(feed.followedShows.map(({ showId }) => showId)).toEqual([1]);
+    expect(feed.notifications.map(({ id }) => id)).toEqual(["1:4", "1:3"]);
     expect(feed.unreadCount).toBe(2);
-    expect((await (await fetch(base)).json() as NotificationFeed).notifications).toEqual([]);
-    const read = await fetch(base, { method: "PATCH", headers: { cookie, "content-type": "application/json" }, body: JSON.stringify({ action: "read", notificationId: "1:4" }) });
-    expect(read.status).toBe(200);
-    cookie = read.headers.get("set-cookie")!.split(";")[0];
-    expect((await (await fetch(base, { headers: { cookie } })).json() as NotificationFeed).unreadCount).toBe(1);
-    const removed = await fetch(base, { method: "DELETE", headers: { cookie, "content-type": "application/json" }, body: JSON.stringify({ action: "unfollow", showId: 1 }) });
-    cookie = removed.headers.get("set-cookie")!.split(";")[0];
-    expect((await (await fetch(base, { headers: { cookie } })).json() as NotificationFeed).followedShows).toEqual([]);
+    expect(await (await fetch(base)).json()).toMatchObject({ followedShows: [], notifications: [], unreadCount: 0 });
+
+    expect((await alice("PATCH", { action: "read", notificationId: "2:4" })).status).toBe(404);
+    expect((await alice("PATCH", { action: "read", notificationId: "1:4" })).status).toBe(200);
+    expect((await (await alice()).json() as NotificationFeed).unreadCount).toBe(1);
+    expect((await alice("DELETE", { action: "unfollow", showId: 1 })).status).toBe(200);
+    expect((await (await alice()).json() as NotificationFeed).followedShows).toEqual([]);
+
+    const otherFeed = await (await bob()).json() as NotificationFeed;
+    expect(otherFeed.followedShows.map(({ showId }) => showId).sort()).toEqual([1, 2]);
+    expect(otherFeed.notifications.map(({ id }) => id).sort()).toEqual(["1:3", "1:4", "2:3", "2:4"]);
+    expect(otherFeed.unreadCount).toBe(4);
   });
   it("validates method, JSON, ID, content type and cross-site requests", async () => {
     expect((await fetch(base, { method: "PUT" })).status).toBe(405);
